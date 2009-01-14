@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" 
+	layout="absolute"
+	initialize="init()" width="100%">
+	
+	<mx:Script>
+		<![CDATA[
+			import flash.utils.setTimeout;
+			import mx.controls.Alert;
+		
+			import mx.managers.CursorManager;
+			import mx.collections.ArrayCollection;
+			
+			import be.wellconsidered.apis.fbbridge.data.FBBridgeUser;
+			import be.wellconsidered.apis.fbbridge.data.FBBridgePermissions;
+			import be.wellconsidered.apis.fbbridge.events.FBBridgeEvent;
+			import be.wellconsidered.apis.fbbridge.FBBridge;
+		
+			private var _fbBridge:FBBridge;
+			
+			private function init():void
+			{
+				setTimeout(initBridge, 5000);
+				
+				btnConnect.alpha = .5;
+				btnConnect.enabled = false;
+			}
+			
+			private function initBridge():void
+			{
+				btnConnect.alpha = 1;
+				btnConnect.enabled = true;
+				
+				_fbBridge = new FBBridge();
+				
+				_fbBridge.addEventListener(FBBridgeEvent.LOGGED_IN, onLoggedIn);
+				_fbBridge.addEventListener(FBBridgeEvent.LOGGED_OUT, onLoggedOut);
+				_fbBridge.addEventListener(FBBridgeEvent.STATUS_SET, onStatusSet);
+			}
+			
+			private function onLoggedIn(e:FBBridgeEvent):void
+			{
+				trace("UID " + _fbBridge.session.uid);
+				
+				connectState(true);
+				
+				_fbBridge.addEventListener(FBBridgeEvent.USER_INFO, onUserInfo);
+				_fbBridge.getUserInfo();
+			}
+			
+			private function onUserInfo(e:FBBridgeEvent):void
+			{
+				var uInfo:FBBridgeUser = _fbBridge.user;
+				
+				trace("User info received (" + uInfo.name + ") !");
+				
+				lblName.text = uInfo.name;
+				lblStatus.text = uInfo.status.message;
+				
+				imgProfile.load(uInfo.pic_square_with_logo);
+			}
+			
+			private function onLoggedOut(e:FBBridgeEvent):void 
+			{ 
+				connectState(false); 
+				
+				lblName.text = "";
+				lblStatus.text = "";
+				
+				imgProfile.load(null);
+			}
+			
+			private function connectState(isConnected:Boolean):void
+			{
+				trace("Connected state is " + isConnected);
+				
+				txtShare.enabled = isConnected;
+				txtStatus.enabled = isConnected;
+				
+				btnStatus.enabled = isConnected;	
+				btnDisconnect.enabled = isConnected;
+				btnShare.enabled = isConnected;
+				btnStory.enabled = isConnected;
+				btnGetFriends.enabled = isConnected;
+				btnPermStatus.enabled = isConnected;
+				btnAppUsers.enabled = isConnected;
+				btnInvite.enabled = isConnected;
+				
+				dgFriends.enabled = isConnected;
+				
+				if(isConnected)
+				{
+					btnConnect.alpha = .5;
+					btnConnect.enabled = false;
+				}
+				else
+				{
+					btnConnect.alpha = 1;
+					btnConnect.enabled = true;
+				}
+			}
+			
+			private function disconnectFromFB():void
+			{
+				trace("Disconnect from FB");
+				
+				_fbBridge.logout();
+				
+				Alert.show("You are logged out", "Succeeded");
+			}
+			
+			private function connectToFB():void
+			{
+				trace("Connect to FB");
+				
+				_fbBridge.login();
+			}
+			
+			private function inviteFriends():void
+			{
+				trace("Invite Friends");
+				
+				_fbBridge.inviteFriends();
+			}
+			
+			private function setStatus():void
+			{
+				trace("Set status to " + txtStatus.text);
+				
+				_fbBridge.setStatus(txtStatus.text);
+			}
+			
+			private function onStatusSet(e:FBBridgeEvent):void
+			{
+				trace("Status is set");
+				
+				Alert.show("Status is set!", "Succeeded");
+			}
+			
+			private function shareSomething():void
+			{
+				if(txtShare.text.length > 0)
+				{
+					_fbBridge.showShare(txtShare.text);
+				}
+				else
+					Alert.show("You need to specify a link to share", "Warning!");
+			}
+			
+			private function setStatusPerm():void
+			{
+				_fbBridge.promptPermission(FBBridgePermissions.STATUS_UPDATE);
+			}
+			
+			private function publishStory():void
+			{
+				_fbBridge.publishFeedStory("40390908517", {"body": '{*actor*} heeft een moment geplaatst op onze website.', "fullbody": '{*actor*} heeft een moment geplaatst op onze website.'});
+			}
+			
+			private function getFriends():void
+			{
+				CursorManager.setBusyCursor();
+				
+				_fbBridge.addEventListener(FBBridgeEvent.FRIENDS_LIST, onFriendsList);
+				_fbBridge.getFriendsList();
+			}
+			
+			private function onFriendsList(e:FBBridgeEvent):void
+			{
+				var arrFriends:Array = e.data as Array;
+				
+				trace("OnFriendList " + arrFriends.length);
+				
+				_fbBridge.removeEventListener(FBBridgeEvent.FRIENDS_LIST, onFriendsList);
+				
+				_fbBridge.addEventListener(FBBridgeEvent.USERS_INFO, onUsersInfo);
+				_fbBridge.getUsersInfo(arrFriends, ["uid", "pic_square", "first_name", "last_name", "about_me", "sex", "name", "proxied_email"]);
+			}
+			
+			private function onUsersInfo(e:FBBridgeEvent):void
+			{
+				trace("onUsersInfo");
+				
+				_fbBridge.removeEventListener(FBBridgeEvent.USERS_INFO, onUsersInfo);
+				
+				var arrFriends:Array = e.data as Array;
+				
+				var arrcFriends:ArrayCollection = new ArrayCollection();
+				
+				for(var i:int = 0; i < arrFriends.length; i++)
+				{
+					var oFriend:Object = arrFriends[i];
+					
+					arrcFriends.addItem({uid: oFriend.uid, name: oFriend.first_name + " " + oFriend.last_name + " (" + oFriend.name + ")", sex: oFriend.sex, proxied_email: oFriend.proxied_email});
+				}
+				
+				dgFriends.dataProvider = arrcFriends;
+				
+				CursorManager.removeBusyCursor();
+			}
+			
+			private function getAppUsers():void
+			{
+				CursorManager.setBusyCursor();
+				
+				_fbBridge.addEventListener(FBBridgeEvent.APP_USERS, onAppUsers);
+				_fbBridge.getAppUsers();
+			}
+			
+			private function onAppUsers(e:FBBridgeEvent):void
+			{
+				var arrUsers:Array = e.data as Array;
+				
+				trace("onAppUsers " + arrUsers.length);
+				
+				_fbBridge.removeEventListener(FBBridgeEvent.APP_USERS, onAppUsers);
+				
+				_fbBridge.addEventListener(FBBridgeEvent.USERS_INFO, onAppUsersInfo);
+				_fbBridge.getUsersInfo(arrUsers, ["uid", "pic_square", "first_name", "last_name", "about_me", "sex", "name", "proxied_email"]);
+			}
+			
+			private function onAppUsersInfo(e:FBBridgeEvent):void
+			{
+				trace("onAppUsersInfo");
+				
+				_fbBridge.removeEventListener(FBBridgeEvent.USERS_INFO, onAppUsersInfo);
+				
+				var arrUsers:Array = e.data as Array;
+				
+				var arrcUsers:ArrayCollection = new ArrayCollection();
+				
+				for(var i:int = 0; i < arrUsers.length; i++)
+				{
+					var oUser:Object = arrUsers[i];
+					
+					arrcUsers.addItem({uid: oUser.uid, name: oUser.first_name + " " + oUser.last_name + " (" + oUser.name + ")", sex: oUser.sex, proxied_email: oUser.proxied_email});
+				}
+				
+				dgAppUsers.dataProvider = arrcUsers;
+				
+				CursorManager.removeBusyCursor();
+			}
+			
+		]]>
+	</mx:Script>
+	
+	<mx:Text x="10" y="10" text="Facebook Connect Flash Bridge" fontSize="12" fontFamily="Arial" color="#0F3E48" fontWeight="bold" fontStyle="italic" width="248" height="32"/>
+
+	<mx:Image x="10" y="50" click="connectToFB()" id="btnConnect" enabled="false"  source="../libs/Connect_light_medium_short.gif" autoLoad="true"/>
+	
+	<mx:Button x="107" y="50" label="Disconnect" enabled="false" id="btnDisconnect" click="disconnectFromFB()" />
+	
+	<mx:TextInput x="10" y="114" id="txtStatus"  enabled="false" />
+	<mx:Button x="10" y="144" label="Set Status" id="btnStatus"  enabled="false" click="setStatus()"/>
+	<mx:Button x="103" y="144" label="First set status permissions" id="btnPermStatus" click="setStatusPerm()" enabled="false"/>
+	
+	<mx:TextInput x="10" y="195" id="txtShare" enabled="false"/>
+	<mx:Button x="10" y="225" label="Share Something" id="btnShare" enabled="false"  click="shareSomething()" />
+	
+	<mx:Button x="10" y="255" label="Publish Story" enabled="false" id="btnStory" click="publishStory()" />
+	
+	<mx:Button x="10" y="285" label="Invite Friends" id="btnInvite" enabled="false" click="inviteFriends()"/>
+	
+	<mx:Button x="427" y="114" label="Get Friends of user" id="btnGetFriends" enabled="false" click="getFriends()"/>
+	<mx:DataGrid x="427" y="143" width="555" height="180" enabled="false" id="dgFriends">
+		<mx:columns>
+			<mx:DataGridColumn headerText="UID" dataField="uid"/>
+			<mx:DataGridColumn headerText="Name" dataField="name"/>
+			<mx:DataGridColumn headerText="Sex" dataField="sex"/>
+			<mx:DataGridColumn headerText="Proxied Email" dataField="proxied_email"/>
+		</mx:columns>
+	</mx:DataGrid>
+	
+	<mx:Image x="427" y="40" id="imgProfile" width="50" height="50"/>
+	<mx:Label x="483" y="40" width="153" id="lblName"/>
+	<mx:Label x="483" y="72" id="lblStatus" width="321"/>
+	
+	<mx:Button x="427" y="351" label="Get Application Users" id="btnAppUsers" click="getAppUsers()" enabled="false"/>
+	<mx:DataGrid x="427" y="381" width="555" id="dgAppUsers">
+		<mx:columns>
+			<mx:DataGridColumn headerText="UID" dataField="uid"/>
+			<mx:DataGridColumn headerText="Name" dataField="name"/>
+			<mx:DataGridColumn headerText="Sex" dataField="sex"/>
+			<mx:DataGridColumn headerText="Proxied Email" dataField="proxied_email"/>
+		</mx:columns>
+	</mx:DataGrid>
+	
+</mx:Application>

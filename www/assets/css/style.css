@@ -1,0 +1,16 @@
+/* hide from ie on mac \*/
+html { height: 100%; overflow: auto; }
+
+#flash_flash 
+{ 
+	position: absolute; top: 0; left: 0; height: 100%; width:  100%; 
+	min-width: 980px;
+	min-height: 660px;
+	/* IE Dynamic Expression to set the width */
+	width:expression(document.body.clientWidth < 980 ? "980px" : "100%" );
+	height:expression(document.body.clientHeight < 660 ? "660px" : "100%" );
+}
+/* end hide */
+
+body { height: 100%; margin: 0; padding: 0; background-color: #000; }
+#flash_alternative{ padding: 100px; color: #fff; font-family: Arial; font-size: 14px; }
