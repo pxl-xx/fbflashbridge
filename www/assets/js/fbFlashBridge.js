@@ -105,6 +105,9 @@ function FBFlashBridgeGetFriendsList()
 		
 		trace("FRIENDS_LIST");
 		
+		if(!$.isArray(friendResult))
+			friendResult = [];
+		
 		FBFlashBridgeDispatcher("FRIENDS_LIST");
 		
 		FBFlashBridgeFlashDispatcher("onFriendsList", friendResult);
@@ -118,6 +121,9 @@ function FBFlashBridgeGetUsersInfo(arrUsers, arrProfileData)
 		usersResult = result;
 
 		trace("USERS_INFO");
+		
+		if(!$.isArray(usersResult))
+			usersResult = [];
 		
 		FBFlashBridgeDispatcher("USERS_INFO");
 		
@@ -133,6 +139,9 @@ function FBFlashBridgeGetAppUsers()
 		
 		trace("APP_USERS");
 		
+		if(!$.isArray(usersResult))
+			usersResult = [];
+			
 		FBFlashBridgeDispatcher("APP_USERS");
 		
 		FBFlashBridgeFlashDispatcher("onAppUsers", usersResult);

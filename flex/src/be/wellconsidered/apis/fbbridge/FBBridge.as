@@ -1,7 +1,7 @@
 package be.wellconsidered.apis.fbbridge
 {
-	import be.wellconsidered.apis.fbbridge.events.FBBridgeEvent;
 	import be.wellconsidered.apis.fbbridge.data.*;
+	import be.wellconsidered.apis.fbbridge.events.FBBridgeEvent;
 	
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
