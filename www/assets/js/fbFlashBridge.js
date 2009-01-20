@@ -27,6 +27,7 @@
  * FBFlashBridgeListener("FRIENDS_LIST", onFriendsList); 
  * FBFlashBridgeListener("USERS_INFO", onUsersInfo);
  * FBFlashBridgeListener("USER_INFO", onUserInfo);
+ * FBFlashBridgeListener("APP_USERS", onUserInfo);
  */
 
 var sAppURL = "";
