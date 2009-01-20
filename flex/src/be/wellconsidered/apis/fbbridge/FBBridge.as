@@ -10,7 +10,7 @@ package be.wellconsidered.apis.fbbridge
 
 	public class FBBridge extends EventDispatcher
 	{
-		private var _fbSession:FBBridgeSession;
+		private var _fbSession:FBBridgeSession = null;
 		private var _fbUser:FBBridgeUser;
 		
 		public function FBBridge()
@@ -100,6 +100,8 @@ package be.wellconsidered.apis.fbbridge
 		 */
 		public function logout():void
 		{
+			_fbSession = null;
+			
 			ExternalInterface.call("FBFlashBridgeLogOut");
 		}
 		
