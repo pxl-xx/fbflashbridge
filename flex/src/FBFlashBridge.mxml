@@ -154,7 +154,7 @@
 			
 			private function publishStory():void
 			{
-				_fbBridge.publishFeedStory("40390908517", {"body": '{*actor*} heeft een moment geplaatst op onze website.', "fullbody": '{*actor*} heeft een moment geplaatst op onze website.'});
+				_fbBridge.publishFeedStory("45707232772", {});
 			}
 			
 			private function getFriends():void

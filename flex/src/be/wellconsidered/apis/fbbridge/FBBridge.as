@@ -167,13 +167,10 @@ package be.wellconsidered.apis.fbbridge
 		
 		/**
 		 * publishFeedStory
-		 * 
-		 * 40390908517
-		 * {"body": '{*actor*} heeft een moment geplaatst op onze website.', "fullbody": '{*actor*} heeft een moment geplaatst op onze website.'}
 		 */
-		public function publishFeedStory(templateBundleId:String, commentData:Object):void
+		public function publishFeedStory(templateBundleId:String, templateData:Object):void
 		{
-			ExternalInterface.call("FBFlashBridgePublishFeedStory", templateBundleId, commentData);
+			ExternalInterface.call("FBFlashBridgePublishFeedStory", templateBundleId, templateData);
 		}
 		
 		/**

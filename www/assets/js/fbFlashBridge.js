@@ -157,11 +157,11 @@ function FBFlashBridgePromptPermission(permission)
 	});
 }
 
-function FBFlashBridgePublishFeedStory(templateBundleId, commentData) 
+function FBFlashBridgePublishFeedStory(templateBundleId, templateData) 
 {
 	FB.ensureInit(function() 
 	{
-        FB.Connect.showFeedDialog(parseInt(templateBundleId), commentData, null, null, FB.FeedStorySize.shortStory, FB.RequireConnect.promptConnect);
+        FB.Connect.showFeedDialog(parseInt(templateBundleId), templateData, null, null, FB.FeedStorySize.shortStory, FB.RequireConnect.promptConnect);
 	});
 }
 
