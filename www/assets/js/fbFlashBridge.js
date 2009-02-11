@@ -181,6 +181,8 @@ function FBFlashBridgeLogOut()
 	{ 
 		trace("LOGGED_OUT");
 		
+		isLoggedIn = false;
+		
 		FBFlashBridgeDispatcher("LOGGED_OUT");
 		
 		FBFlashBridgeFlashDispatcher("onLoggedOut");
@@ -203,11 +205,14 @@ function FBFlashBridgeLoggedIn()
 		
 	trace("LOGGED_IN");
 	
-	isLoggedIn = true;
+	if(!isLoggedIn)
+	{
+		isLoggedIn = true;
 
-	FBFlashBridgeDispatcher("LOGGED_IN");
+		FBFlashBridgeDispatcher("LOGGED_IN");
 	
-	FBFlashBridgeFlashDispatcher("onLoggedIn", api._session);
+		FBFlashBridgeFlashDispatcher("onLoggedIn", api._session);
+	}
 }
 
 function FBFlashBridgeOnLoad() 
